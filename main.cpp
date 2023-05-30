@@ -270,7 +270,33 @@ bool bishopMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char
     }
 
     return false;
+}
 
+bool kingMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
+    int colDiff = abs(toColVal - fromColVal);
+    int rowDiff = abs(toRowVal - fromRowVal);
+
+    //Moving vertically
+    if(fromColVal == toColVal) {
+        if(abs(toRowVal - fromRowVal) != 1) {
+            return false;
+        }
+    //Moving horizontally
+    }else if(fromRowVal == toRowVal) {
+        if(abs(toColVal - fromColVal) != 1) {
+            return false;
+        }
+    } else {
+        if(colDiff != 1 || rowDiff != 1) {
+            return false;
+        }
+    }
+
+    if(chessboard[toRowVal][toColVal].symbol == '\0' || chessboard[toRowVal][toColVal].player != currentPlayer) {
+        return true;
+    }
+
+    return false;
 }
 
 bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentPlayer) {
@@ -333,6 +359,11 @@ bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentP
     //Queen
     if(chessboard[fromRowVal][fromColVal].name.compare("Queen") == 0) {
         return rookMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer) || bishopMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
+    }
+
+    //King
+    if(chessboard[fromRowVal][fromColVal].name.compare("King") == 0) {
+        return kingMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
     }
 }
 
