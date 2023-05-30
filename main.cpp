@@ -105,6 +105,11 @@ bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentP
         return false;
     }
 
+    if(toRowVal == fromRowVal && toColVal == fromColVal) {
+        std::cout << "Invalid Move.\n";
+        return false;
+    }
+
     //Pawn
     if(chessboard[fromRowVal][fromColVal].name.compare("Pawn") == 0) {
         //if pawn moving in straight line
@@ -146,12 +151,72 @@ bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentP
                 return false;
             }
         }
+
+        std::cout << "Invalid Move. Pawn cannot go there\n";
+        return false;
     }
-    std::cout << "Invalid Move. Pawn cannot go there\n";
-    return false;
+
+    //Rook
+    if(chessboard[fromRowVal][fromColVal].name.compare("Rook") == 0) {
+        if(fromRowVal != toRowVal && fromColVal != toColVal) {
+            std::cout << "Invalid Move. Rook cannot go there\n";
+            return false;
+        }
+
+        //Moving vertically
+        if(fromColVal == toColVal) {
+            //Up
+            if(fromRowVal > toRowVal) {
+                for(int i = fromRowVal-1; i > toRowVal; i--) {
+                    //Piece in the way
+                    if(chessboard[i][toColVal].symbol != '\0') {
+                        return false;
+                    }
+                }
+            }
+            //Down
+            if(fromRowVal < toRowVal) {
+                for(int i = fromRowVal+1; i < toRowVal; i++) {
+                    //Piece in the way
+                    if(chessboard[i][toColVal].symbol != '\0') {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        if(fromRowVal == toRowVal) {
+            //Left
+            if(fromColVal > toColVal) {
+                for(int i = fromColVal-1; i > toColVal; i--) {
+                    //Piece in the way
+                    if(chessboard[toRowVal][i].symbol != '\0') {
+                        return false;
+                    }
+                }
+            }
+
+            //Right
+            if(fromColVal < toColVal) {
+                for(int i = fromColVal+1; i < toColVal; i++) {
+                    //Piece in the way
+                    if(chessboard[toRowVal][i].symbol != '\0') {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        //Ending position is empty or contains opponent piece
+        if(chessboard[toRowVal][toColVal].symbol == '\0' || chessboard[toRowVal][toColVal].player != currentPlayer) {
+            return true;
+        }
+
+        return false;
+    }
 }
 
-void makeMove(int fromCol, int fromRow, int toCol, int toRow) {
+void makeMove(char fromCol, int fromRow, char toCol, int toRow) {
     int fromColVal = fromCol - 'a';
     int toColVal = toCol - 'a';
     int fromRowVal = 8 - fromRow;
