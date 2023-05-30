@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdlib>
+#include <algorithm>
 
 // Define constants for the chessboard dimensions
 const int BOARD_SIZE = 8;
@@ -214,6 +215,52 @@ bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentP
 
         return false;
     }
+    
+    //Knight
+    if(chessboard[fromRowVal][fromColVal].name.compare("Knight") == 0) {
+        std::vector<std::pair<int, int>> validPos;
+        if(fromRowVal - 2 >= 0) {
+            if(fromColVal + 1 < BOARD_SIZE) {
+                validPos.push_back(std::make_pair(fromRowVal-2, fromColVal+1));
+            }
+            if(fromColVal-1 >= 0) {
+                validPos.push_back(std::make_pair(fromRowVal-2, fromColVal-1));
+            }
+        }
+        if(fromRowVal - 1 >= 0) {
+            if(fromColVal + 2 < BOARD_SIZE) {
+                validPos.push_back(std::make_pair(fromRowVal-1, fromColVal+2));
+            }
+            if(fromColVal-2 >= 0) {
+                validPos.push_back(std::make_pair(fromRowVal-1, fromColVal-2));
+            }
+        }
+        if(fromRowVal + 2 < BOARD_SIZE) {
+            if(fromColVal + 1 < BOARD_SIZE) {
+                validPos.push_back(std::make_pair(fromRowVal+2, fromColVal+1));
+            }
+            if(fromColVal - 1 < BOARD_SIZE) {
+                validPos.push_back(std::make_pair(fromRowVal+2, fromColVal-1));
+            }
+        }
+        if(fromRowVal + 1 < BOARD_SIZE) {
+            if(fromColVal + 2 < BOARD_SIZE) {
+                validPos.push_back(std::make_pair(fromRowVal+1, fromColVal+2));
+            }
+            if(fromColVal-2 >= 0) {
+                validPos.push_back(std::make_pair(fromRowVal+1, fromColVal-2));
+            }
+        }
+
+        //possible destination spot
+        if(std::find(validPos.begin(), validPos.end(), std::make_pair(toRowVal,toColVal)) != validPos.end()) {
+            if(chessboard[toRowVal][toColVal].player != currentPlayer) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 void makeMove(char fromCol, int fromRow, char toCol, int toRow) {
@@ -307,7 +354,7 @@ int main() {
     int gameState = 0;
     
     initializeChessboard();
-    displayChessboard();
+    //displayChessboard();
 
 
     while(gameState == 0) {
@@ -316,6 +363,7 @@ int main() {
         bool validMove = false;
 
         while(!validMove) {
+            displayChessboard();
             getPlayerMove(fromCol, fromRow, toCol, toRow);
 
             validMove = isValidMove(fromCol, fromRow, toCol, toRow, currentPlayer);
