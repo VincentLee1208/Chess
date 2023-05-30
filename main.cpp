@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <cstdlib>
 
 // Define constants for the chessboard dimensions
 const int BOARD_SIZE = 8;
@@ -74,21 +75,94 @@ bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentP
     int fromRowVal = 8 - fromRow;
     int toRowVal = 8 - toRow;
 
+    std::cout << fromRowVal << std::endl;
+    std::cout << fromColVal << std::endl;
+    std::cout << toRowVal << std::endl;
+    std::cout << toColVal << std::endl;
+
+    //Out of bounds
     if(fromColVal < 0 || fromRowVal < 0 || toColVal < 0 || toRowVal < 0 || 
     fromColVal >= BOARD_SIZE || fromRowVal >= BOARD_SIZE || toColVal >= BOARD_SIZE || toRowVal >= BOARD_SIZE) {
         std::cout << "Invalid Move. Out of Bounds.\n";
         return false;
     }
 
+    //No piece selected
     if(chessboard[fromRowVal][fromColVal].symbol == '\0') {
         std::cout << "Invalid Move. No piece at source cell\n";
         return false;
     }
 
+    //Moving enemy piece
     if(chessboard[fromRowVal][fromColVal].player != currentPlayer) {
         std::cout << "Invalid Move. Piece owned by other player\n";
         return false;
     }
+
+    //Player's piece already in destination
+    if(chessboard[toRowVal][toColVal].player == currentPlayer) {
+        std::cout << "Invalid Move. Piece already in destination\n";
+        return false;
+    }
+
+    //Pawn
+    if(chessboard[fromRowVal][fromColVal].name.compare("Pawn") == 0) {
+        //if pawn moving in straight line
+        if(fromColVal == toColVal) {
+            //in starting position can move one or two blocks
+            if(fromRowVal == 6) {
+                if(fromRowVal - toRowVal <= 2) {
+                    return true;
+                } else {
+                    std::cout << "Invalid Move. Pawn cannot go there\n";
+                    return false;
+                }
+            } else {
+                if(fromRowVal - toRowVal == 1) {
+                    return true;
+                } else {
+                    std::cout << "Invalid Move. Pawn cannot go there\n";
+                    return false;
+                }
+            }
+        }
+
+        //if pawn moving diagonal
+        if(fromColVal != toColVal) {
+            //if diagonally moves more than one space
+            if(abs(toColVal - fromColVal) != 1 || fromRowVal - toRowVal != 1) {
+                std::cout << "Invalid Move. Pawn cannot go there\n";
+                return false;
+            } 
+            
+            //capturing enemy piece
+            if(chessboard[toRowVal][toColVal].symbol != '\0' && chessboard[toRowVal][toColVal].symbol != currentPlayer) {
+                return true;
+            //en passant
+            } else if(chessboard[toRowVal+1][toColVal].name.compare("Pawn") == 0 && chessboard[toRowVal+1][toColVal].symbol != currentPlayer) {
+                return true;
+            } else {
+                std::cout << "Invalid Move. Pawn cannot go there\n";
+                return false;
+            }
+        }
+    }
+    std::cout << "Invalid Move. Pawn cannot go there\n";
+    return false;
+}
+
+void makeMove(int fromCol, int fromRow, int toCol, int toRow) {
+    int fromColVal = fromCol - 'a';
+    int toColVal = toCol - 'a';
+    int fromRowVal = 8 - fromRow;
+    int toRowVal = 8 - toRow;
+
+    chessboard[toRowVal][toColVal] = chessboard[fromRowVal][fromColVal];
+
+    chessboard[fromRowVal][fromColVal].symbol = '\0';
+    chessboard[fromRowVal][fromColVal].name = "";
+    chessboard[fromRowVal][fromColVal].player = '\0';
+    
 }
 
 
@@ -181,6 +255,9 @@ int main() {
 
             validMove = isValidMove(fromCol, fromRow, toCol, toRow, currentPlayer);
         }
+
+        makeMove(fromCol, fromRow, toCol, toRow);
+        displayChessboard();
         gameState = kingDead();
     }
 
