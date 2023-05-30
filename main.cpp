@@ -9,6 +9,7 @@ bool singlePlayer = true;
 // Define a structure to represent a chess piece
 struct ChessPiece {
     char symbol;
+    char player;
     std::string name;
 };
 
@@ -19,30 +20,30 @@ std::vector<std::vector<ChessPiece>> chessboard(BOARD_SIZE, std::vector<ChessPie
 void initializeChessboard() {
     // Initialize pawns for both players
     for (int col = 0; col < BOARD_SIZE; ++col) {
-        chessboard[1][col] = { 'P', "Pawn" };
-        chessboard[6][col] = { 'p', "Pawn" };
+        chessboard[1][col] = { 'P', 'B',"Pawn" };
+        chessboard[6][col] = { 'p', 'W',"Pawn" };
     }
 
     // Initialize remaining pieces for both players
-    chessboard[0][0] = { 'R', "Rook" };
-    chessboard[0][7] = { 'R', "Rook" };
-    chessboard[7][0] = { 'r', "Rook" };
-    chessboard[7][7] = { 'r', "Rook" };
+    chessboard[0][0] = { 'R', 'B',"Rook" };
+    chessboard[0][7] = { 'R', 'B',"Rook" };
+    chessboard[7][0] = { 'r', 'W',"Rook" };
+    chessboard[7][7] = { 'r', 'W',"Rook" };
 
-    chessboard[0][1] = { 'N', "Knight" };
-    chessboard[0][6] = { 'N', "Knight" };
-    chessboard[7][1] = { 'n', "Knight" };
-    chessboard[7][6] = { 'n', "Knight" };
+    chessboard[0][1] = { 'N', 'B',"Knight" };
+    chessboard[0][6] = { 'N', 'B',"Knight" };
+    chessboard[7][1] = { 'n', 'W',"Knight" };
+    chessboard[7][6] = { 'n', 'W',"Knight" };
 
-    chessboard[0][2] = { 'B', "Bishop" };
-    chessboard[0][5] = { 'B', "Bishop" };
-    chessboard[7][2] = { 'b', "Bishop" };
-    chessboard[7][5] = { 'b', "Bishop" };
+    chessboard[0][2] = { 'B', 'B',"Bishop" };
+    chessboard[0][5] = { 'B', 'B',"Bishop" };
+    chessboard[7][2] = { 'b', 'W',"Bishop" };
+    chessboard[7][5] = { 'b', 'W',"Bishop" };
 
-    chessboard[0][3] = { 'Q', "Queen" };
-    chessboard[0][4] = { 'K', "King" };
-    chessboard[7][3] = { 'q', "Queen" };
-    chessboard[7][4] = { 'k', "King" };
+    chessboard[0][3] = { 'Q', 'B',"Queen" };
+    chessboard[0][4] = { 'K', 'B',"King" };
+    chessboard[7][3] = { 'q', 'W',"Queen" };
+    chessboard[7][4] = { 'k', 'W',"King" };
 }
 
 // Display the current state of the chessboard
@@ -67,10 +68,37 @@ void displayChessboard() {
     }
 }
 
+bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentPlayer) {
+    int fromColVal = fromCol - 'a';
+    int toColVal = toCol - 'a';
+    int fromRowVal = 8 - fromRow;
+    int toRowVal = 8 - toRow;
 
-void getPlayerMove(int& fromCol, int& fromRow, int& toCol, int& toRow) {
-    std::cout << "Move: ";
-    std::cin >> fromCol >> fromRow >> toCol >> toRow;
+    if(fromColVal < 0 || fromRowVal < 0 || toColVal < 0 || toRowVal < 0 || 
+    fromColVal >= BOARD_SIZE || fromRowVal >= BOARD_SIZE || toColVal >= BOARD_SIZE || toRowVal >= BOARD_SIZE) {
+        std::cout << "Invalid Move. Out of Bounds.\n";
+        return false;
+    }
+
+    if(chessboard[fromRowVal][fromColVal].symbol == '\0') {
+        std::cout << "Invalid Move. No piece at source cell\n";
+        return false;
+    }
+
+    if(chessboard[fromRowVal][fromColVal].player != currentPlayer) {
+        std::cout << "Invalid Move. Piece owned by other player\n";
+        return false;
+    }
+}
+
+
+void getPlayerMove(char& fromCol, int& fromRow, char& toCol, int& toRow) {
+    std::cout << "From: " << std::endl;
+
+    std::cin >> fromCol >> fromRow;
+    std::cout << "To: " << std::endl;
+
+    std::cin >> toCol >> toRow;
 }
 
 bool displayMenu() {
@@ -98,6 +126,37 @@ bool displayMenu() {
         
     return false;
 }
+
+/*
+check if kings are still alive on the board
+Returns 0 if both alive
+Returns 1 if player king dead
+returns 2 if other king dead
+*/
+int kingDead() {
+    bool otherKing = false;
+    bool myKing = false;
+    for(int row = 0; row < BOARD_SIZE; row++) {
+        for(int col = 0; col < BOARD_SIZE; col++) {
+            if(chessboard[row][col].symbol == 'K') {
+                myKing = true;
+            }
+            if(chessboard[row][col].symbol == 'k') {
+                otherKing = true;
+            }
+
+            if(myKing && otherKing) {
+                return 0;
+            }
+        }
+    }
+
+    if(!myKing) {
+        return 1;
+    } else {
+        return 2;
+    }
+}
  
 int main() {
     /*
@@ -105,9 +164,25 @@ int main() {
         gameStart = displayMenu();
     }
     */
+    char currentPlayer = 'W';
+    int gameState = 0;
     
     initializeChessboard();
     displayChessboard();
+
+
+    while(gameState == 0) {
+        char fromCol, toCol;
+        int fromRow, toRow = 9;
+        bool validMove = false;
+
+        while(!validMove) {
+            getPlayerMove(fromCol, fromRow, toCol, toRow);
+
+            validMove = isValidMove(fromCol, fromRow, toCol, toRow, currentPlayer);
+        }
+        gameState = kingDead();
+    }
 
     return 0;
 }
