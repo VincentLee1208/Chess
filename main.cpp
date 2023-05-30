@@ -70,16 +70,214 @@ void displayChessboard() {
     }
 }
 
+bool pawnMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
+    //if pawn moving in straight line
+    if(fromColVal == toColVal) {
+        //in starting position can move one or two blocks
+        if(fromRowVal == 6) {
+            if(fromRowVal - toRowVal <= 2) {
+                return true;
+            } else {
+                std::cout << "Invalid Move. Pawn cannot go there\n";
+                return false;
+            }
+        } else {
+            if(fromRowVal - toRowVal == 1) {
+                return true;
+            } else {
+                std::cout << "Invalid Move. Pawn cannot go there\n";
+                return false;
+            }
+        }
+    }
+
+    //if pawn moving diagonal
+    if(fromColVal != toColVal) {
+        //if diagonally moves more than one space
+        if(abs(toColVal - fromColVal) != 1 || fromRowVal - toRowVal != 1) {
+            std::cout << "Invalid Move. Pawn cannot go there\n";
+            return false;
+        } 
+        
+        //capturing enemy piece
+        if(chessboard[toRowVal][toColVal].symbol != '\0' && chessboard[toRowVal][toColVal].symbol != currentPlayer) {
+            return true;
+        //en passant
+        } else if(chessboard[toRowVal+1][toColVal].name.compare("Pawn") == 0 && chessboard[toRowVal+1][toColVal].symbol != currentPlayer) {
+            return true;
+        } else {
+            std::cout << "Invalid Move. Pawn cannot go there\n";
+            return false;
+        }
+    }
+
+    std::cout << "Invalid Move. Pawn cannot go there\n";
+    return false;
+}
+
+bool knightMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
+    std::vector<std::pair<int, int>> validPos;
+    if(fromRowVal - 2 >= 0) {
+        if(fromColVal + 1 < BOARD_SIZE) {
+            validPos.push_back(std::make_pair(fromRowVal-2, fromColVal+1));
+        }
+        if(fromColVal-1 >= 0) {
+            validPos.push_back(std::make_pair(fromRowVal-2, fromColVal-1));
+        }
+    }
+    if(fromRowVal - 1 >= 0) {
+        if(fromColVal + 2 < BOARD_SIZE) {
+            validPos.push_back(std::make_pair(fromRowVal-1, fromColVal+2));
+        }
+        if(fromColVal-2 >= 0) {
+            validPos.push_back(std::make_pair(fromRowVal-1, fromColVal-2));
+        }
+    }
+    if(fromRowVal + 2 < BOARD_SIZE) {
+        if(fromColVal + 1 < BOARD_SIZE) {
+            validPos.push_back(std::make_pair(fromRowVal+2, fromColVal+1));
+        }
+        if(fromColVal - 1 < BOARD_SIZE) {
+            validPos.push_back(std::make_pair(fromRowVal+2, fromColVal-1));
+        }
+    }
+    if(fromRowVal + 1 < BOARD_SIZE) {
+        if(fromColVal + 2 < BOARD_SIZE) {
+            validPos.push_back(std::make_pair(fromRowVal+1, fromColVal+2));
+        }
+        if(fromColVal-2 >= 0) {
+            validPos.push_back(std::make_pair(fromRowVal+1, fromColVal-2));
+        }
+    }
+
+    //possible destination spot
+    if(std::find(validPos.begin(), validPos.end(), std::make_pair(toRowVal,toColVal)) != validPos.end()) {
+        if(chessboard[toRowVal][toColVal].player != currentPlayer) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool rookMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
+    if(fromRowVal != toRowVal && fromColVal != toColVal) {
+        std::cout << "Invalid Move. Rook cannot go there\n";
+        return false;
+    }
+
+    //Moving vertically
+    if(fromColVal == toColVal) {
+        //Up
+        if(fromRowVal > toRowVal) {
+            for(int i = fromRowVal-1; i > toRowVal; i--) {
+                //Piece in the way
+                if(chessboard[i][toColVal].symbol != '\0') {
+                    return false;
+                }
+            }
+        }
+        //Down
+        if(fromRowVal < toRowVal) {
+            for(int i = fromRowVal+1; i < toRowVal; i++) {
+                //Piece in the way
+                if(chessboard[i][toColVal].symbol != '\0') {
+                    return false;
+                }
+            }
+        }
+    }
+
+    if(fromRowVal == toRowVal) {
+        //Left
+        if(fromColVal > toColVal) {
+            for(int i = fromColVal-1; i > toColVal; i--) {
+                //Piece in the way
+                if(chessboard[toRowVal][i].symbol != '\0') {
+                    return false;
+                }
+            }
+        }
+
+        //Right
+        if(fromColVal < toColVal) {
+            for(int i = fromColVal+1; i < toColVal; i++) {
+                //Piece in the way
+                if(chessboard[toRowVal][i].symbol != '\0') {
+                    return false;
+                }
+            }
+        }
+    }
+
+    //Ending position is empty or contains opponent piece
+    if(chessboard[toRowVal][toColVal].symbol == '\0' || chessboard[toRowVal][toColVal].player != currentPlayer) {
+        return true;
+    }
+
+    return false;
+}
+
+bool bishopMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
+    int colDiff = abs(toColVal - fromColVal);
+    int rowDiff = abs(toRowVal - fromRowVal);
+
+    if(colDiff != rowDiff) {
+        return false;
+    }
+
+    //Down right
+    if(toColVal > fromColVal && toRowVal > fromRowVal) {
+        for(int i = 1; i < colDiff; i++) {
+            if(chessboard[fromRowVal + i][fromColVal + i].symbol != '\0') {
+                return false;
+            }
+        }
+        if(chessboard[fromRowVal + rowDiff][fromColVal + colDiff].symbol == '\0' || chessboard[fromRowVal + rowDiff][fromColVal + colDiff].player != currentPlayer) {
+            return true;
+        } 
+    } //Down left
+    else if(toColVal < fromColVal && toRowVal > fromRowVal) {
+        for(int i = 1; i < colDiff; i++) {
+            if(chessboard[fromRowVal + i][fromColVal - i].symbol != '\0') {
+                return false;
+            }
+        }
+
+        if(chessboard[fromRowVal + rowDiff][fromColVal - colDiff].symbol == '\0' || chessboard[fromRowVal + rowDiff][fromColVal - colDiff].player != currentPlayer) {
+            return true;
+        }
+    } //Up left
+    else if(toColVal < fromColVal && toRowVal < fromRowVal) {
+        for(int i = 1; i < colDiff; i++) {
+            if(chessboard[fromRowVal - i][fromColVal - i].symbol != '\0') {
+                return false;
+            }
+        }
+        if(chessboard[fromRowVal - rowDiff][fromColVal - colDiff].symbol == '\0' || chessboard[fromRowVal - rowDiff][fromColVal - colDiff].player != currentPlayer) {
+            return true;
+        }
+    } //Up right
+    else if(toColVal > fromColVal && toRowVal < fromRowVal) {
+        for(int i = 1; i < colDiff; i++) {
+            if(chessboard[fromRowVal - i][fromColVal + i].symbol != '\0') {
+                return false;
+            }
+        }
+        if(chessboard[fromRowVal - rowDiff][fromColVal + colDiff].symbol == '\0' || chessboard[fromRowVal - rowDiff][fromColVal + colDiff].player != currentPlayer) {
+            return true;
+        }
+    }
+
+    return false;
+
+}
+
 bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentPlayer) {
     int fromColVal = fromCol - 'a';
     int toColVal = toCol - 'a';
     int fromRowVal = 8 - fromRow;
     int toRowVal = 8 - toRow;
-
-    std::cout << fromRowVal << std::endl;
-    std::cout << fromColVal << std::endl;
-    std::cout << toRowVal << std::endl;
-    std::cout << toColVal << std::endl;
 
     //Out of bounds
     if(fromColVal < 0 || fromRowVal < 0 || toColVal < 0 || toRowVal < 0 || 
@@ -114,210 +312,30 @@ bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentP
 
     //Pawn
     if(chessboard[fromRowVal][fromColVal].name.compare("Pawn") == 0) {
-        //if pawn moving in straight line
-        if(fromColVal == toColVal) {
-            //in starting position can move one or two blocks
-            if(fromRowVal == 6) {
-                if(fromRowVal - toRowVal <= 2) {
-                    return true;
-                } else {
-                    std::cout << "Invalid Move. Pawn cannot go there\n";
-                    return false;
-                }
-            } else {
-                if(fromRowVal - toRowVal == 1) {
-                    return true;
-                } else {
-                    std::cout << "Invalid Move. Pawn cannot go there\n";
-                    return false;
-                }
-            }
-        }
-
-        //if pawn moving diagonal
-        if(fromColVal != toColVal) {
-            //if diagonally moves more than one space
-            if(abs(toColVal - fromColVal) != 1 || fromRowVal - toRowVal != 1) {
-                std::cout << "Invalid Move. Pawn cannot go there\n";
-                return false;
-            } 
-            
-            //capturing enemy piece
-            if(chessboard[toRowVal][toColVal].symbol != '\0' && chessboard[toRowVal][toColVal].symbol != currentPlayer) {
-                return true;
-            //en passant
-            } else if(chessboard[toRowVal+1][toColVal].name.compare("Pawn") == 0 && chessboard[toRowVal+1][toColVal].symbol != currentPlayer) {
-                return true;
-            } else {
-                std::cout << "Invalid Move. Pawn cannot go there\n";
-                return false;
-            }
-        }
-
-        std::cout << "Invalid Move. Pawn cannot go there\n";
-        return false;
+        return pawnMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
     }
 
     //Rook
     if(chessboard[fromRowVal][fromColVal].name.compare("Rook") == 0) {
-        if(fromRowVal != toRowVal && fromColVal != toColVal) {
-            std::cout << "Invalid Move. Rook cannot go there\n";
-            return false;
-        }
-
-        //Moving vertically
-        if(fromColVal == toColVal) {
-            //Up
-            if(fromRowVal > toRowVal) {
-                for(int i = fromRowVal-1; i > toRowVal; i--) {
-                    //Piece in the way
-                    if(chessboard[i][toColVal].symbol != '\0') {
-                        return false;
-                    }
-                }
-            }
-            //Down
-            if(fromRowVal < toRowVal) {
-                for(int i = fromRowVal+1; i < toRowVal; i++) {
-                    //Piece in the way
-                    if(chessboard[i][toColVal].symbol != '\0') {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        if(fromRowVal == toRowVal) {
-            //Left
-            if(fromColVal > toColVal) {
-                for(int i = fromColVal-1; i > toColVal; i--) {
-                    //Piece in the way
-                    if(chessboard[toRowVal][i].symbol != '\0') {
-                        return false;
-                    }
-                }
-            }
-
-            //Right
-            if(fromColVal < toColVal) {
-                for(int i = fromColVal+1; i < toColVal; i++) {
-                    //Piece in the way
-                    if(chessboard[toRowVal][i].symbol != '\0') {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        //Ending position is empty or contains opponent piece
-        if(chessboard[toRowVal][toColVal].symbol == '\0' || chessboard[toRowVal][toColVal].player != currentPlayer) {
-            return true;
-        }
-
-        return false;
+        return rookMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
     }
     
     //Knight
     if(chessboard[fromRowVal][fromColVal].name.compare("Knight") == 0) {
-        std::vector<std::pair<int, int>> validPos;
-        if(fromRowVal - 2 >= 0) {
-            if(fromColVal + 1 < BOARD_SIZE) {
-                validPos.push_back(std::make_pair(fromRowVal-2, fromColVal+1));
-            }
-            if(fromColVal-1 >= 0) {
-                validPos.push_back(std::make_pair(fromRowVal-2, fromColVal-1));
-            }
-        }
-        if(fromRowVal - 1 >= 0) {
-            if(fromColVal + 2 < BOARD_SIZE) {
-                validPos.push_back(std::make_pair(fromRowVal-1, fromColVal+2));
-            }
-            if(fromColVal-2 >= 0) {
-                validPos.push_back(std::make_pair(fromRowVal-1, fromColVal-2));
-            }
-        }
-        if(fromRowVal + 2 < BOARD_SIZE) {
-            if(fromColVal + 1 < BOARD_SIZE) {
-                validPos.push_back(std::make_pair(fromRowVal+2, fromColVal+1));
-            }
-            if(fromColVal - 1 < BOARD_SIZE) {
-                validPos.push_back(std::make_pair(fromRowVal+2, fromColVal-1));
-            }
-        }
-        if(fromRowVal + 1 < BOARD_SIZE) {
-            if(fromColVal + 2 < BOARD_SIZE) {
-                validPos.push_back(std::make_pair(fromRowVal+1, fromColVal+2));
-            }
-            if(fromColVal-2 >= 0) {
-                validPos.push_back(std::make_pair(fromRowVal+1, fromColVal-2));
-            }
-        }
-
-        //possible destination spot
-        if(std::find(validPos.begin(), validPos.end(), std::make_pair(toRowVal,toColVal)) != validPos.end()) {
-            if(chessboard[toRowVal][toColVal].player != currentPlayer) {
-                return true;
-            }
-        }
-
-        return false;
+        return knightMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
     }
 
     //Bishop
     if(chessboard[fromRowVal][fromColVal].name.compare("Bishop") == 0) {
-        int colDiff = abs(toColVal - fromColVal);
-        int rowDiff = abs(toRowVal - fromRowVal);
+        return bishopMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
+    }
 
-        if(colDiff != rowDiff) {
-            return false;
-        }
-
-        //Down right
-        if(toColVal > fromColVal && toRowVal > fromRowVal) {
-            for(int i = 1; i < colDiff; i++) {
-                if(chessboard[fromRowVal + i][fromColVal + i].symbol != '\0') {
-                    return false;
-                }
-            }
-            if(chessboard[fromRowVal + rowDiff][fromColVal + colDiff].symbol == '\0' || chessboard[fromRowVal + rowDiff][fromColVal + colDiff].player != currentPlayer) {
-                return true;
-            } 
-        } //Down left
-        else if(toColVal < fromColVal && toRowVal > fromRowVal) {
-            for(int i = 1; i < colDiff; i++) {
-                if(chessboard[fromRowVal + i][fromColVal - i].symbol != '\0') {
-                    return false;
-                }
-            }
-
-            if(chessboard[fromRowVal + rowDiff][fromColVal - colDiff].symbol == '\0' || chessboard[fromRowVal + rowDiff][fromColVal - colDiff].player != currentPlayer) {
-                return true;
-            }
-        } //Up left
-        else if(toColVal < fromColVal && toRowVal < fromRowVal) {
-            for(int i = 1; i < colDiff; i++) {
-                if(chessboard[fromRowVal - i][fromColVal - i].symbol != '\0') {
-                    return false;
-                }
-            }
-            if(chessboard[fromRowVal - rowDiff][fromColVal - colDiff].symbol == '\0' || chessboard[fromRowVal - rowDiff][fromColVal - colDiff].player != currentPlayer) {
-                return true;
-            }
-        } //Up right
-        else if(toColVal > fromColVal && toRowVal < fromRowVal) {
-            for(int i = 1; i < colDiff; i++) {
-                if(chessboard[fromRowVal - i][fromColVal + i].symbol != '\0') {
-                    return false;
-                }
-            }
-            if(chessboard[fromRowVal - rowDiff][fromColVal + colDiff].symbol == '\0' || chessboard[fromRowVal - rowDiff][fromColVal + colDiff].player != currentPlayer) {
-                return true;
-            }
-        }
-
-        return false;
+    //Queen
+    if(chessboard[fromRowVal][fromColVal].name.compare("Queen") == 0) {
+        return rookMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer) || bishopMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
     }
 }
+
 
 void makeMove(char fromCol, int fromRow, char toCol, int toRow) {
     int fromColVal = fromCol - 'a';
@@ -334,13 +352,27 @@ void makeMove(char fromCol, int fromRow, char toCol, int toRow) {
 }
 
 
-void getPlayerMove(char& fromCol, int& fromRow, char& toCol, int& toRow) {
+bool getPlayerMove(char& fromCol, int& fromRow, char& toCol, int& toRow) {
+    std::string from = "";
+    std::string to = "";
+
     std::cout << "From: " << std::endl;
+    std::cin >> from;
 
-    std::cin >> fromCol >> fromRow;
     std::cout << "To: " << std::endl;
+    std::cin >> to;
 
-    std::cin >> toCol >> toRow;
+    if(from.length() != 2 || to.length() != 2) {
+        std::cout << "Invalid input. Try again" << std::endl; 
+        return false;
+    } else {
+        fromCol = from.at(0);
+        fromRow = from.at(1) - '0';
+        toCol = to.at(0);
+        toRow = to.at(1) - '0';
+        return true;
+    }
+
 }
 
 bool displayMenu() {
@@ -420,9 +452,9 @@ int main() {
 
         while(!validMove) {
             displayChessboard();
-            getPlayerMove(fromCol, fromRow, toCol, toRow);
-
-            validMove = isValidMove(fromCol, fromRow, toCol, toRow, currentPlayer);
+            if(getPlayerMove(fromCol, fromRow, toCol, toRow)) {
+                validMove = isValidMove(fromCol, fromRow, toCol, toRow, currentPlayer);
+            }
         }
 
         makeMove(fromCol, fromRow, toCol, toRow);
