@@ -98,7 +98,7 @@ bool displayMenu() {
         
     return false;
 }
-
+ 
 int main() {
     /*
     while(!gameStart) {
