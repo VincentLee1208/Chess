@@ -106,6 +106,7 @@ bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentP
         return false;
     }
 
+    //Inputted same destination as start
     if(toRowVal == fromRowVal && toColVal == fromColVal) {
         std::cout << "Invalid Move.\n";
         return false;
@@ -255,6 +256,61 @@ bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentP
         //possible destination spot
         if(std::find(validPos.begin(), validPos.end(), std::make_pair(toRowVal,toColVal)) != validPos.end()) {
             if(chessboard[toRowVal][toColVal].player != currentPlayer) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //Bishop
+    if(chessboard[fromRowVal][fromColVal].name.compare("Bishop") == 0) {
+        int colDiff = abs(toColVal - fromColVal);
+        int rowDiff = abs(toRowVal - fromRowVal);
+
+        if(colDiff != rowDiff) {
+            return false;
+        }
+
+        //Down right
+        if(toColVal > fromColVal && toRowVal > fromRowVal) {
+            for(int i = 1; i < colDiff; i++) {
+                if(chessboard[fromRowVal + i][fromColVal + i].symbol != '\0') {
+                    return false;
+                }
+            }
+            if(chessboard[fromRowVal + rowDiff][fromColVal + colDiff].symbol == '\0' || chessboard[fromRowVal + rowDiff][fromColVal + colDiff].player != currentPlayer) {
+                return true;
+            } 
+        } //Down left
+        else if(toColVal < fromColVal && toRowVal > fromRowVal) {
+            for(int i = 1; i < colDiff; i++) {
+                if(chessboard[fromRowVal + i][fromColVal - i].symbol != '\0') {
+                    return false;
+                }
+            }
+
+            if(chessboard[fromRowVal + rowDiff][fromColVal - colDiff].symbol == '\0' || chessboard[fromRowVal + rowDiff][fromColVal - colDiff].player != currentPlayer) {
+                return true;
+            }
+        } //Up left
+        else if(toColVal < fromColVal && toRowVal < fromRowVal) {
+            for(int i = 1; i < colDiff; i++) {
+                if(chessboard[fromRowVal - i][fromColVal - i].symbol != '\0') {
+                    return false;
+                }
+            }
+            if(chessboard[fromRowVal - rowDiff][fromColVal - colDiff].symbol == '\0' || chessboard[fromRowVal - rowDiff][fromColVal - colDiff].player != currentPlayer) {
+                return true;
+            }
+        } //Up right
+        else if(toColVal > fromColVal && toRowVal < fromRowVal) {
+            for(int i = 1; i < colDiff; i++) {
+                if(chessboard[fromRowVal - i][fromColVal + i].symbol != '\0') {
+                    return false;
+                }
+            }
+            if(chessboard[fromRowVal - rowDiff][fromColVal + colDiff].symbol == '\0' || chessboard[fromRowVal - rowDiff][fromColVal + colDiff].player != currentPlayer) {
                 return true;
             }
         }
