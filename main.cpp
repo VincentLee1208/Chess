@@ -13,6 +13,7 @@ struct ChessPiece {
     char symbol;
     char player;
     std::string name;
+    std::vector<std::pair<int,int>> possibleMoves;
 };
 
 // Create a 2D array to represent the chessboard
@@ -21,31 +22,58 @@ std::vector<std::vector<ChessPiece>> chessboard(BOARD_SIZE, std::vector<ChessPie
 // Initialize the chessboard with the starting positions of the pieces
 void initializeChessboard() {
     // Initialize pawns for both players
+    std::vector<std::pair<int,int>> tempMoves;
     for (int col = 0; col < BOARD_SIZE; ++col) {
-        chessboard[1][col] = { 'P', 'B',"Pawn" };
-        chessboard[6][col] = { 'p', 'W',"Pawn" };
+        tempMoves.push_back(std::make_pair(2, col));
+        tempMoves.push_back(std::make_pair(3, col));
+        chessboard[1][col] = { 'P', 'B',"Pawn", tempMoves};
+
+        tempMoves.clear();
+        tempMoves.push_back(std::make_pair(5, col));
+        tempMoves.push_back(std::make_pair(4, col));
+        chessboard[6][col] = { 'p', 'W',"Pawn", tempMoves };
     }
 
+    tempMoves.clear();
+
     // Initialize remaining pieces for both players
-    chessboard[0][0] = { 'R', 'B',"Rook" };
-    chessboard[0][7] = { 'R', 'B',"Rook" };
-    chessboard[7][0] = { 'r', 'W',"Rook" };
-    chessboard[7][7] = { 'r', 'W',"Rook" };
+    chessboard[0][0] = { 'R', 'B',"Rook", tempMoves};
+    chessboard[0][7] = { 'R', 'B',"Rook",  tempMoves};
+    chessboard[7][0] = { 'r', 'W',"Rook", tempMoves};
+    chessboard[7][7] = { 'r', 'W',"Rook", tempMoves};
 
-    chessboard[0][1] = { 'N', 'B',"Knight" };
-    chessboard[0][6] = { 'N', 'B',"Knight" };
-    chessboard[7][1] = { 'n', 'W',"Knight" };
-    chessboard[7][6] = { 'n', 'W',"Knight" };
+    tempMoves.push_back(std::make_pair(2,0));
+    tempMoves.push_back(std::make_pair(2,2));
 
-    chessboard[0][2] = { 'B', 'B',"Bishop" };
-    chessboard[0][5] = { 'B', 'B',"Bishop" };
-    chessboard[7][2] = { 'b', 'W',"Bishop" };
-    chessboard[7][5] = { 'b', 'W',"Bishop" };
+    chessboard[0][1] = { 'N', 'B',"Knight", tempMoves };
 
-    chessboard[0][3] = { 'Q', 'B',"Queen" };
-    chessboard[0][4] = { 'K', 'B',"King" };
-    chessboard[7][3] = { 'q', 'W',"Queen" };
-    chessboard[7][4] = { 'k', 'W',"King" };
+    tempMoves.clear();
+
+    tempMoves.push_back(std::make_pair(2,5));
+    tempMoves.push_back(std::make_pair(2,7));
+    chessboard[0][6] = { 'N', 'B',"Knight", tempMoves };
+
+    tempMoves.clear();
+    tempMoves.push_back(std::make_pair(5,0));
+    tempMoves.push_back(std::make_pair(5,2));
+    chessboard[7][1] = { 'n', 'W',"Knight", tempMoves};
+
+    tempMoves.clear();
+    tempMoves.push_back(std::make_pair(5,5));
+    tempMoves.push_back(std::make_pair(5,7));
+    chessboard[7][6] = { 'n', 'W',"Knight", tempMoves };
+
+    tempMoves.clear();
+
+    chessboard[0][2] = { 'B', 'B',"Bishop", tempMoves };
+    chessboard[0][5] = { 'B', 'B',"Bishop", tempMoves };
+    chessboard[7][2] = { 'b', 'W',"Bishop", tempMoves };
+    chessboard[7][5] = { 'b', 'W',"Bishop", tempMoves };
+
+    chessboard[0][3] = { 'Q', 'B',"Queen", tempMoves };
+    chessboard[0][4] = { 'K', 'B',"King", tempMoves };
+    chessboard[7][3] = { 'q', 'W',"Queen", tempMoves };
+    chessboard[7][4] = { 'k', 'W',"King", tempMoves };
 }
 
 // Display the current state of the chessboard
@@ -58,245 +86,310 @@ void displayChessboard() {
     for (int row = 0; row < BOARD_SIZE; ++row) {
         for (int col = 0; col < BOARD_SIZE; ++col) {
             if(col == 0) {
-                std::cout << 8-row << " ";
+                std::cout << 8-row << "|";
             }
             if (chessboard[row][col].symbol != '\0') {
-                std::cout << chessboard[row][col].symbol << " ";
+                std::cout << chessboard[row][col].symbol << "|";
             } else {
-                std::cout << "- ";
+                std::cout << "-|";
             }
         }
+
         std::cout << "\n";
     }
+    
+    std::cout << "\n";
 }
 
-bool pawnMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
-    //if pawn moving in straight line
-    if(fromColVal == toColVal) {
-        //in starting position can move one or two blocks
-        if(fromRowVal == 6) {
-            if(fromRowVal - toRowVal <= 2) {
-                return true;
-            } else {
-                std::cout << "Invalid Move. Pawn cannot go there\n";
-                return false;
+std::vector<std::pair<int,int>> pawnMoves(int toColVal, int toRowVal, char currentPlayer) {
+    std::vector<std::pair<int, int>> newMoves;
+    if(toRowVal == 6) {
+        if(chessboard[toRowVal-2][toColVal].symbol == '\0') {
+            newMoves.push_back(std::make_pair(toRowVal-2, toColVal));
+        }
+    }
+    //Can still move up
+    if(toRowVal-1 >= 0) {
+        //Move Straight
+        if(chessboard[toRowVal-1][toColVal].symbol == '\0') {
+            newMoves.push_back(std::make_pair(toRowVal-1, toColVal));
+        }
+
+        //Move Left Diagonal
+        if(toColVal-1 >= 0) {
+            if(chessboard[toRowVal-1][toColVal-1].symbol != '\0'  && chessboard[toRowVal-1][toColVal-1].player != currentPlayer) {
+                newMoves.push_back(std::make_pair(toRowVal-1, toColVal-1));
+            } else if(chessboard[toRowVal][toColVal-1].symbol != '\0'  && chessboard[toRowVal][toColVal-1].player != currentPlayer) {
+                newMoves.push_back(std::make_pair(toRowVal-1, toColVal-1));
             }
+        }
+
+        //Move Right Diagonal
+        if(toColVal+1 < BOARD_SIZE) {
+            if(chessboard[toRowVal-1][toColVal+1].symbol != '\0'  && chessboard[toRowVal-1][toColVal+1].player != currentPlayer) {
+                newMoves.push_back(std::make_pair(toRowVal-1, toColVal+1));
+            } else if(chessboard[toRowVal][toColVal+1].symbol != '\0'  && chessboard[toRowVal][toColVal+1].player != currentPlayer) {
+                newMoves.push_back(std::make_pair(toRowVal-1, toColVal+1));
+            }
+        }
+    }
+    return newMoves;
+}
+
+std::vector<std::pair<int,int>> rookMoves(int toColVal, int toRowVal, char currentPlayer) {
+    std::vector<std::pair<int, int>> newMoves;
+    for(int i = toRowVal-1; i >= 0; i--) {
+        if(chessboard[i][toColVal].symbol == '\0') {
+            newMoves.push_back(std::make_pair(i,toColVal));
+        } else if(chessboard[i][toColVal].symbol != '\0' && chessboard[i][toColVal].player != currentPlayer) {
+            newMoves.push_back(std::make_pair(i, toColVal));
+            break;
         } else {
-            if(fromRowVal - toRowVal == 1) {
-                return true;
-            } else {
-                std::cout << "Invalid Move. Pawn cannot go there\n";
-                return false;
-            }
+            break;
         }
     }
 
-    //if pawn moving diagonal
-    if(fromColVal != toColVal) {
-        //if diagonally moves more than one space
-        if(abs(toColVal - fromColVal) != 1 || fromRowVal - toRowVal != 1) {
-            std::cout << "Invalid Move. Pawn cannot go there\n";
-            return false;
-        } 
-        
-        //capturing enemy piece
-        if(chessboard[toRowVal][toColVal].symbol != '\0' && chessboard[toRowVal][toColVal].symbol != currentPlayer) {
-            return true;
-        //en passant
-        } else if(chessboard[toRowVal+1][toColVal].name.compare("Pawn") == 0 && chessboard[toRowVal+1][toColVal].symbol != currentPlayer) {
-            return true;
+    for(int i = toRowVal+1; i < BOARD_SIZE; i++) {
+        if(chessboard[i][toColVal].symbol == '\0') {
+            newMoves.push_back(std::make_pair(i,toColVal));
+        } else if(chessboard[i][toColVal].symbol != '\0' && chessboard[i][toColVal].player != currentPlayer) {
+            newMoves.push_back(std::make_pair(i, toColVal));
+            break;
         } else {
-            std::cout << "Invalid Move. Pawn cannot go there\n";
-            return false;
+            break;
         }
     }
 
-    std::cout << "Invalid Move. Pawn cannot go there\n";
-    return false;
+    for(int j = toColVal-1; j >= 0; j--) {
+        if(chessboard[toRowVal][j].symbol == '\0') {
+            newMoves.push_back(std::make_pair(toRowVal,j));
+        } else if(chessboard[toRowVal][j].symbol != '\0' && chessboard[toRowVal][j].player != currentPlayer) {
+            newMoves.push_back(std::make_pair(toRowVal, j));
+            break;
+        } else {
+            break;
+        }
+    }
+
+    for(int j = toColVal+1; j < BOARD_SIZE; j++) {
+        if(chessboard[toRowVal][j].symbol == '\0') {
+            newMoves.push_back(std::make_pair(toRowVal,j));
+        } else if(chessboard[toRowVal][j].symbol != '\0' && chessboard[toRowVal][j].player != currentPlayer) {
+            newMoves.push_back(std::make_pair(toRowVal, j));
+            break;
+        } else {
+            break;
+        }
+    }
+
+    return newMoves;
 }
 
-bool knightMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
-    std::vector<std::pair<int, int>> validPos;
-    if(fromRowVal - 2 >= 0) {
-        if(fromColVal + 1 < BOARD_SIZE) {
-            validPos.push_back(std::make_pair(fromRowVal-2, fromColVal+1));
+std::vector<std::pair<int,int>> knightMoves(int toColVal, int toRowVal, char currentPlayer) {
+    std::vector<std::pair<int, int>> newMoves;
+    if(toRowVal - 1 >= 0) {
+        if(toColVal + 2 < BOARD_SIZE && (chessboard[toRowVal-1][toColVal+2].symbol == '\0' || chessboard[toRowVal-1][toColVal+2].player != currentPlayer)) {
+            newMoves.push_back(std::make_pair(toRowVal-1, toColVal+2));
         }
-        if(fromColVal-1 >= 0) {
-            validPos.push_back(std::make_pair(fromRowVal-2, fromColVal-1));
+        if(toColVal - 2 >= 0 && (chessboard[toRowVal-1][toColVal-2].symbol == '\0' || chessboard[toRowVal-1][toColVal-2].player != currentPlayer)) {
+            newMoves.push_back(std::make_pair(toRowVal-1, toColVal-2));
         }
-    }
-    if(fromRowVal - 1 >= 0) {
-        if(fromColVal + 2 < BOARD_SIZE) {
-            validPos.push_back(std::make_pair(fromRowVal-1, fromColVal+2));
-        }
-        if(fromColVal-2 >= 0) {
-            validPos.push_back(std::make_pair(fromRowVal-1, fromColVal-2));
-        }
-    }
-    if(fromRowVal + 2 < BOARD_SIZE) {
-        if(fromColVal + 1 < BOARD_SIZE) {
-            validPos.push_back(std::make_pair(fromRowVal+2, fromColVal+1));
-        }
-        if(fromColVal - 1 < BOARD_SIZE) {
-            validPos.push_back(std::make_pair(fromRowVal+2, fromColVal-1));
-        }
-    }
-    if(fromRowVal + 1 < BOARD_SIZE) {
-        if(fromColVal + 2 < BOARD_SIZE) {
-            validPos.push_back(std::make_pair(fromRowVal+1, fromColVal+2));
-        }
-        if(fromColVal-2 >= 0) {
-            validPos.push_back(std::make_pair(fromRowVal+1, fromColVal-2));
+        if(toRowVal - 2 >= 0) {
+            if(toColVal + 1 < BOARD_SIZE && (chessboard[toRowVal-2][toColVal+1].symbol == '\0' || chessboard[toRowVal-2][toColVal+1].player != currentPlayer)) {
+                newMoves.push_back(std::make_pair(toRowVal-2, toColVal+1));
+            }
+            if(toColVal - 1 >= 0 && (chessboard[toRowVal-2][toColVal-1].symbol == '\0' || chessboard[toRowVal-2][toColVal-1].player != currentPlayer)) {
+                newMoves.push_back(std::make_pair(toRowVal-2, toColVal-1));
+            }
         }
     }
 
-    //possible destination spot
-    if(std::find(validPos.begin(), validPos.end(), std::make_pair(toRowVal,toColVal)) != validPos.end()) {
-        if(chessboard[toRowVal][toColVal].player != currentPlayer) {
-            return true;
+    if(toRowVal + 1 < BOARD_SIZE) {
+        if(toColVal + 2 < BOARD_SIZE && (chessboard[toRowVal+1][toColVal+2].symbol == '\0' || chessboard[toRowVal+1][toColVal+2].player != currentPlayer)) {
+            newMoves.push_back(std::make_pair(toRowVal+1, toColVal+2));
+        }
+        if(toColVal - 2 >= 0 && (chessboard[toRowVal+1][toColVal-2].symbol == '\0' || chessboard[toRowVal+1][toColVal-2].player != currentPlayer)) {
+            newMoves.push_back(std::make_pair(toRowVal+1, toColVal-2));
+        }
+        if(toRowVal + 2 < BOARD_SIZE) {
+            if(toColVal + 1 < BOARD_SIZE && (chessboard[toRowVal+2][toColVal+1].symbol == '\0' || chessboard[toRowVal+2][toColVal+1].player != currentPlayer)) {
+                newMoves.push_back(std::make_pair(toRowVal+2, toColVal+1));
+            }
+            if(toColVal - 1 >= 0 && (chessboard[toRowVal+2][toColVal-1].symbol == '\0' || chessboard[toRowVal+2][toColVal-1].player != currentPlayer)) {
+                newMoves.push_back(std::make_pair(toRowVal+2, toColVal-1));
+            }
         }
     }
 
-    return false;
+    return newMoves;
 }
 
-bool rookMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
-    if(fromRowVal != toRowVal && fromColVal != toColVal) {
-        std::cout << "Invalid Move. Rook cannot go there\n";
-        return false;
+std::vector<std::pair<int,int>> bishopMoves(int toColVal, int toRowVal, char currentPlayer) {
+    std::vector<std::pair<int, int>> newMoves;
+    bool tleft = true;
+    bool tright = true;
+    bool bleft = true;
+    bool bright = true;
+
+    for(int i = 1; i < BOARD_SIZE; i++) {
+        if(tleft) {
+            if(toRowVal - i >= 0 && toColVal - i >= 0) {
+                if(chessboard[toRowVal-i][toColVal-i].symbol == '\0') {
+                    newMoves.push_back(std::make_pair(toRowVal-i,toColVal-i));
+                } else if(chessboard[toRowVal-i][toColVal-i].symbol != '\0' && chessboard[toRowVal-i][toColVal-i].player != currentPlayer) {
+                    newMoves.push_back(std::make_pair(toRowVal-i,toColVal-i));
+                    tleft = false;
+                } else {
+                    tleft = false;
+                }
+            }
+        }
+        if(tright) {
+            if(toRowVal - i >= 0 && toColVal + i < BOARD_SIZE) {
+                if(chessboard[toRowVal-i][toColVal+i].symbol == '\0') {
+                    newMoves.push_back(std::make_pair(toRowVal-i,toColVal+i));
+                } else if(chessboard[toRowVal-i][toColVal+i].symbol != '\0' && chessboard[toRowVal-i][toColVal+i].player != currentPlayer) {
+                    newMoves.push_back(std::make_pair(toRowVal-i,toColVal+i));
+                    tright = false;
+                } else {
+                    tright = false;
+                }
+            }
+        }
+        if(bright) {
+            if(toRowVal + i < BOARD_SIZE && toColVal + i < BOARD_SIZE) {
+                if(chessboard[toRowVal+i][toColVal+i].symbol == '\0') {
+                    newMoves.push_back(std::make_pair(toRowVal+i,toColVal+i));
+                } else if(chessboard[toRowVal+i][toColVal+i].symbol != '\0' && chessboard[toRowVal+i][toColVal+i].player != currentPlayer) {
+                    newMoves.push_back(std::make_pair(toRowVal+i,toColVal+i));
+                    bright = false;
+                } else {
+                    bright = false;
+                }
+            }
+        }
+        if(bleft) {
+            if(toRowVal + i < BOARD_SIZE && toColVal - i >= 0) {
+                if(chessboard[toRowVal+i][toColVal-i].symbol == '\0') {
+                    newMoves.push_back(std::make_pair(toRowVal+i,toColVal-i));
+                } else if(chessboard[toRowVal+i][toColVal-i].symbol != '\0' && chessboard[toRowVal+i][toColVal-i].player != currentPlayer) {
+                    newMoves.push_back(std::make_pair(toRowVal+i,toColVal-i));
+                    bleft = false;
+                } else {
+                    bleft = false;
+                }
+            }
+        }
     }
 
-    //Moving vertically
-    if(fromColVal == toColVal) {
-        //Up
-        if(fromRowVal > toRowVal) {
-            for(int i = fromRowVal-1; i > toRowVal; i--) {
-                //Piece in the way
-                if(chessboard[i][toColVal].symbol != '\0') {
-                    return false;
-                }
+    return newMoves;
+}
+
+std::vector<std::pair<int, int>> kingMoves(int toColVal, int toRowVal, char currentPlayer) {
+    std::vector<std::pair<int, int>> newMoves;
+    if(toRowVal - 1 >= 0) {
+        if(chessboard[toRowVal-1][toColVal].symbol == '\0' || chessboard[toRowVal-1][toColVal].player != currentPlayer) {
+            newMoves.push_back(std::make_pair(toRowVal-1, toColVal));
+        }
+        if(toColVal - 1 >= 0) {
+            if(chessboard[toRowVal-1][toColVal-1].symbol == '\0' || chessboard[toRowVal-1][toColVal-1].player != currentPlayer) {
+                newMoves.push_back(std::make_pair(toRowVal-1, toColVal-1));
             }
         }
-        //Down
-        if(fromRowVal < toRowVal) {
-            for(int i = fromRowVal+1; i < toRowVal; i++) {
-                //Piece in the way
-                if(chessboard[i][toColVal].symbol != '\0') {
-                    return false;
-                }
+        if(toColVal + 1 < BOARD_SIZE) {
+            if(chessboard[toRowVal-1][toColVal+1].symbol == '\0' || chessboard[toRowVal-1][toColVal+1].player != currentPlayer) {
+                newMoves.push_back(std::make_pair(toRowVal-1, toColVal+1));
+            }
+        }
+    }
+    if(toColVal - 1 >= 0) {
+        if(chessboard[toRowVal][toColVal-1].symbol == '\0' || chessboard[toRowVal][toColVal-1].player != currentPlayer) {
+            newMoves.push_back(std::make_pair(toRowVal, toColVal-1));
+        }
+    }
+    if(toColVal + 1 < BOARD_SIZE) {
+        if(chessboard[toRowVal][toColVal+1].symbol == '\0' || chessboard[toRowVal][toColVal+1].player != currentPlayer) {
+            newMoves.push_back(std::make_pair(toRowVal, toColVal+1));
+        }
+    }
+    if(toRowVal + 1 < BOARD_SIZE) {
+        if(chessboard[toRowVal+1][toColVal].symbol == '\0' || chessboard[toRowVal+1][toColVal].player != currentPlayer) {
+            newMoves.push_back(std::make_pair(toRowVal+1, toColVal));
+        }
+        if(toColVal - 1 >= 0) {
+            if(chessboard[toRowVal+1][toColVal-1].symbol == '\0' || chessboard[toRowVal+1][toColVal-1].player != currentPlayer) {
+                newMoves.push_back(std::make_pair(toRowVal+1, toColVal-1));
+            }
+        }
+        if(toColVal + 1 < BOARD_SIZE) {
+            if(chessboard[toRowVal+1][toColVal+1].symbol == '\0' || chessboard[toRowVal+1][toColVal+1].player != currentPlayer) {
+                newMoves.push_back(std::make_pair(toRowVal+1, toColVal+1));
             }
         }
     }
 
-    if(fromRowVal == toRowVal) {
-        //Left
-        if(fromColVal > toColVal) {
-            for(int i = fromColVal-1; i > toColVal; i--) {
-                //Piece in the way
-                if(chessboard[toRowVal][i].symbol != '\0') {
-                    return false;
-                }
-            }
-        }
+    return newMoves;
+}
 
-        //Right
-        if(fromColVal < toColVal) {
-            for(int i = fromColVal+1; i < toColVal; i++) {
-                //Piece in the way
-                if(chessboard[toRowVal][i].symbol != '\0') {
-                    return false;
-                }
-            }
+std::vector<std::pair<int,int>> updateMoves(int ColVal, int RowVal,char currentPlayer) {
+    
+    std::vector<std::pair<int, int>> newMoves;
+    //Pawn
+    if(chessboard[RowVal][ColVal].player == currentPlayer) {
+        if(chessboard[RowVal][ColVal].name.compare("Pawn") == 0) {
+            return pawnMoves(ColVal, RowVal, currentPlayer);
+        }
+    }
+    
+    //Rook
+    if(chessboard[RowVal][ColVal].name.compare("Rook") == 0) {
+        return rookMoves(ColVal, RowVal, currentPlayer);
+    }
+
+    
+    //Knight
+    if(chessboard[RowVal][ColVal].name.compare("Knight") == 0) {
+        return knightMoves(ColVal, RowVal, currentPlayer);
+    }
+    
+    
+    //Bishop
+    if(chessboard[RowVal][ColVal].name.compare("Bishop") == 0) {
+        return bishopMoves(ColVal, RowVal, currentPlayer);
+    }
+
+    //Queen
+    if(chessboard[RowVal][ColVal].name.compare("Queen") == 0) {
+        std::vector<std::pair<int,int>> bMoves = bishopMoves(ColVal, RowVal, currentPlayer);
+        std::vector<std::pair<int,int>> rMoves = rookMoves(ColVal, RowVal, currentPlayer);
+
+        if(bMoves.size() >= rMoves.size()) {
+            bMoves.insert(bMoves.end(), rMoves.begin(), rMoves.end());
+            return bMoves;
+        } else {
+            rMoves.insert(rMoves.end(), bMoves.begin(), bMoves.end());
+            return rMoves;
         }
     }
 
-    //Ending position is empty or contains opponent piece
-    if(chessboard[toRowVal][toColVal].symbol == '\0' || chessboard[toRowVal][toColVal].player != currentPlayer) {
+    //King
+    if(chessboard[RowVal][ColVal].name.compare("King") == 0) {
+        return kingMoves(ColVal, RowVal, currentPlayer);
+    }
+
+    return chessboard[RowVal][ColVal].possibleMoves;
+
+    
+
+}
+
+bool validateMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
+    if(std::find(chessboard[fromRowVal][fromColVal].possibleMoves.begin(), chessboard[fromRowVal][fromColVal].possibleMoves.end(), std::make_pair(toRowVal,toColVal)) != chessboard[fromRowVal][fromColVal].possibleMoves.end()) {
+        std::cout << "valid Move" << std::endl;
         return true;
-    }
-
-    return false;
-}
-
-bool bishopMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
-    int colDiff = abs(toColVal - fromColVal);
-    int rowDiff = abs(toRowVal - fromRowVal);
-
-    if(colDiff != rowDiff) {
-        return false;
-    }
-
-    //Down right
-    if(toColVal > fromColVal && toRowVal > fromRowVal) {
-        for(int i = 1; i < colDiff; i++) {
-            if(chessboard[fromRowVal + i][fromColVal + i].symbol != '\0') {
-                return false;
-            }
-        }
-        if(chessboard[fromRowVal + rowDiff][fromColVal + colDiff].symbol == '\0' || chessboard[fromRowVal + rowDiff][fromColVal + colDiff].player != currentPlayer) {
-            return true;
-        } 
-    } //Down left
-    else if(toColVal < fromColVal && toRowVal > fromRowVal) {
-        for(int i = 1; i < colDiff; i++) {
-            if(chessboard[fromRowVal + i][fromColVal - i].symbol != '\0') {
-                return false;
-            }
-        }
-
-        if(chessboard[fromRowVal + rowDiff][fromColVal - colDiff].symbol == '\0' || chessboard[fromRowVal + rowDiff][fromColVal - colDiff].player != currentPlayer) {
-            return true;
-        }
-    } //Up left
-    else if(toColVal < fromColVal && toRowVal < fromRowVal) {
-        for(int i = 1; i < colDiff; i++) {
-            if(chessboard[fromRowVal - i][fromColVal - i].symbol != '\0') {
-                return false;
-            }
-        }
-        if(chessboard[fromRowVal - rowDiff][fromColVal - colDiff].symbol == '\0' || chessboard[fromRowVal - rowDiff][fromColVal - colDiff].player != currentPlayer) {
-            return true;
-        }
-    } //Up right
-    else if(toColVal > fromColVal && toRowVal < fromRowVal) {
-        for(int i = 1; i < colDiff; i++) {
-            if(chessboard[fromRowVal - i][fromColVal + i].symbol != '\0') {
-                return false;
-            }
-        }
-        if(chessboard[fromRowVal - rowDiff][fromColVal + colDiff].symbol == '\0' || chessboard[fromRowVal - rowDiff][fromColVal + colDiff].player != currentPlayer) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-bool kingMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer) {
-    int colDiff = abs(toColVal - fromColVal);
-    int rowDiff = abs(toRowVal - fromRowVal);
-
-    //Moving vertically
-    if(fromColVal == toColVal) {
-        if(abs(toRowVal - fromRowVal) != 1) {
-            return false;
-        }
-    //Moving horizontally
-    }else if(fromRowVal == toRowVal) {
-        if(abs(toColVal - fromColVal) != 1) {
-            return false;
-        }
     } else {
-        if(colDiff != 1 || rowDiff != 1) {
-            return false;
-        }
+        return false;
     }
-
-    if(chessboard[toRowVal][toColVal].symbol == '\0' || chessboard[toRowVal][toColVal].player != currentPlayer) {
-        return true;
-    }
-
-    return false;
 }
 
 bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentPlayer) {
@@ -336,50 +429,36 @@ bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentP
         return false;
     }
 
-    //Pawn
-    if(chessboard[fromRowVal][fromColVal].name.compare("Pawn") == 0) {
-        return pawnMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
-    }
-
-    //Rook
-    if(chessboard[fromRowVal][fromColVal].name.compare("Rook") == 0) {
-        return rookMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
-    }
-    
-    //Knight
-    if(chessboard[fromRowVal][fromColVal].name.compare("Knight") == 0) {
-        return knightMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
-    }
-
-    //Bishop
-    if(chessboard[fromRowVal][fromColVal].name.compare("Bishop") == 0) {
-        return bishopMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
-    }
-
-    //Queen
-    if(chessboard[fromRowVal][fromColVal].name.compare("Queen") == 0) {
-        return rookMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer) || bishopMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
-    }
-
-    //King
-    if(chessboard[fromRowVal][fromColVal].name.compare("King") == 0) {
-        return kingMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
-    }
+    return validateMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer);
 }
 
 
-void makeMove(char fromCol, int fromRow, char toCol, int toRow) {
+void makeMove(char fromCol, int fromRow, char toCol, int toRow, char currentPlayer) {
     int fromColVal = fromCol - 'a';
     int toColVal = toCol - 'a';
     int fromRowVal = 8 - fromRow;
     int toRowVal = 8 - toRow;
 
-    chessboard[toRowVal][toColVal] = chessboard[fromRowVal][fromColVal];
+    std::cout << "BEFORE" << std::endl;
+    for(int i = 0; i < chessboard[fromRowVal][fromColVal].possibleMoves.size(); i++) {
+        std::cout << chessboard[fromRowVal][fromColVal].possibleMoves[i].first << ", " << chessboard[fromRowVal][fromColVal].possibleMoves[i].second << std::endl;
+    }
 
+    chessboard[toRowVal][toColVal] = chessboard[fromRowVal][fromColVal];
     chessboard[fromRowVal][fromColVal].symbol = '\0';
     chessboard[fromRowVal][fromColVal].name = "";
     chessboard[fromRowVal][fromColVal].player = '\0';
-    
+
+    for(int i = 0; i < BOARD_SIZE; i++) {
+        for(int j = 0; j < BOARD_SIZE; j++) {
+            chessboard[i][j].possibleMoves = updateMoves(j,i, currentPlayer);
+        }
+    }
+
+    std::cout << "AFTER" << std::endl;
+    for(int i = 0; i < chessboard[toRowVal][toColVal].possibleMoves.size(); i++) {
+        std::cout << chessboard[toRowVal][toColVal].possibleMoves[i].first << ", " << chessboard[toRowVal][toColVal].possibleMoves[i].second << std::endl;
+    }
 }
 
 
@@ -488,7 +567,7 @@ int main() {
             }
         }
 
-        makeMove(fromCol, fromRow, toCol, toRow);
+        makeMove(fromCol, fromRow, toCol, toRow, currentPlayer);
         displayChessboard();
         gameState = kingDead();
     }
