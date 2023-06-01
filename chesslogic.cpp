@@ -58,8 +58,6 @@ bool isValidMove(char fromCol, int fromRow, char toCol, int toRow, char currentP
 
 void makeMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer , std::vector<std::vector<ChessPiece>> &chessboard) {
 
-    std::cout << "Testing: " << fromRowVal << ", " << fromColVal << " to " << toRowVal << ", " << toColVal << std::endl;
-
     /*
     std::cout << "BEFORE" << std::endl;
     for(int i = 0; i < chessboard[fromRowVal][fromColVal].possibleMoves.size(); i++) {

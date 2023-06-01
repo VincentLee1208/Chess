@@ -189,6 +189,7 @@ int main() {
         displayChessboard(chessboard);
 
         aiTurn(chessboard, 'B');
+        displayChessboard(chessboard);
         
         gameState = kingDead();
     }
