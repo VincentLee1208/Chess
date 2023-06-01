@@ -6,6 +6,7 @@
 #include "chesspiece.h"
  
 int evaluateBoard(const std::vector<std::vector<ChessPiece>>& chessboard);
+int minimax(const std::vector<std::vector<ChessPiece>>& chessboard, int depth, int alpha, int beta, bool maxmizingPlayer);
 
 const int pawnVal = 100;
 const int knightVal = 320;

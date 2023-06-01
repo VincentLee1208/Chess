@@ -1,5 +1,8 @@
 #include <vector>
 #include "ai.h"
+#include <limits>
+
+const int MAX_DEPTH = 2;
 
 int evaluateBoard(const std::vector<std::vector<ChessPiece>>& chessboard) {
     int score = 0;
@@ -64,5 +67,29 @@ int evaluateBoard(const std::vector<std::vector<ChessPiece>>& chessboard) {
             }
         }
     }
+
     return score;
+}
+
+int minimax(const std::vector<std::vector<ChessPiece>>& chessboard, int depth, int alpha, int beta, bool maxmizingPlayer, char aiPlayer) {
+    if(depth == 0) {
+        return evaluateBoard(chessboard);
+    }
+
+    if(maxmizingPlayer) {
+        //make maxScore the lowest possible int
+        int maxScore = std::numeric_limits<int>::min();
+
+        for(int row = 0; row < 8; row++) {
+            for(int col = 0; col < 8; col++) {
+                if(chessboard[row][col].player == aiPlayer) {
+                    std::vector<std::pair<int, int>> moves = chessboard[row][col].possibleMoves;
+                    for(int i = 0; i < moves.size(); i++){
+                        std::vector<std::vector<ChessPiece>> copyChessboard = chessboard;
+                        
+                    }
+                }
+            }
+        }
+    }
 }
