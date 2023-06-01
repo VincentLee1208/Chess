@@ -2,19 +2,13 @@
 #include <vector>
 #include <cstdlib>
 #include <algorithm>
+#include "ai.h"
+#include "chesspiece.h"
 
 // Define constants for the chessboard dimensions
 const int BOARD_SIZE = 8;
 bool gameStart = false;
 bool singlePlayer = true;
-
-// Define a structure to represent a chess piece
-struct ChessPiece {
-    char symbol;
-    char player;
-    std::string name;
-    std::vector<std::pair<int,int>> possibleMoves;
-};
 
 // Create a 2D array to represent the chessboard
 std::vector<std::vector<ChessPiece>> chessboard(BOARD_SIZE, std::vector<ChessPiece>(BOARD_SIZE));
@@ -591,6 +585,7 @@ int main() {
         char fromCol, toCol;
         int fromRow, toRow = 9;
         bool validMove = false;
+        int score = 0;
 
         while(!validMove) {
             displayChessboard();
@@ -600,6 +595,8 @@ int main() {
         }
 
         makeMove(fromCol, fromRow, toCol, toRow, currentPlayer);
+        score = evaluateBoard(chessboard);
+        std::cout << "AI score: " << score << std::endl;
         displayChessboard();
         gameState = kingDead();
     }
