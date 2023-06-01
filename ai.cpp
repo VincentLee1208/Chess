@@ -7,7 +7,7 @@
 #include "gamelogic.h"
 
 
-const int MAX_DEPTH = 1;
+const int MAX_DEPTH = 3;
 std::pair<std::pair<int,int>, std::pair<int, int>> bestMove;
 
 void aiTurn(std::vector<std::vector<ChessPiece>>& chessboard, char aiPlayer) {
@@ -102,21 +102,18 @@ int minimax(const std::vector<std::vector<ChessPiece>>& chessboard, int depth, i
                     std::vector<std::pair<int, int>> moves = chessboard[row][col].possibleMoves;
                     for(int i = 0; i < moves.size(); i++){
                         std::vector<std::vector<ChessPiece>> copyChessboard = chessboard;
-                        std::cout << "Testing: " << row << ", " << col << " to " << moves[i].first << ", " << moves[i].second << std::endl;
+                        //std::cout << "Testing: " << row << ", " << col << " to " << moves[i].first << ", " << moves[i].second << std::endl;
                         if(player == 'W') {
 
                             makeMove(col, row, moves[i].second, moves[i].first, player, copyChessboard);
-                            
-                            //std::cout << "COPY\n";
-                            //displayChessboard(copyChessboard);
-                            //std::cout << "COPY\n";
+                    
 
                             int score = minimax(copyChessboard, depth-1, alpha, beta, false, 'B');
 
                             if(score > maxScore) {
                                 bestMove.first = std::make_pair(row, col);
                                 bestMove.second = std::make_pair(moves[i].first, moves[i].second);
-                                std::cout << "Best Move: " << moves[i].first << ", " << moves[i].second << std::endl;
+                                //std::cout << "Best Move: " << moves[i].first << ", " << moves[i].second << std::endl;
                             }
 
                             maxScore = std::max(maxScore,score);
@@ -125,17 +122,13 @@ int minimax(const std::vector<std::vector<ChessPiece>>& chessboard, int depth, i
                         } else {
                             makeMove(col, row, moves[i].second, moves[i].first, player, copyChessboard);
 
-                            //std::cout << "COPY\n";
-                            //displayChessboard(copyChessboard);
-                            //std::cout << "COPY\n";
-
                             int score = minimax(copyChessboard, depth-1, alpha, beta, false, 'W');
-                            std::cout << "Move score: " << score << std::endl;
+                            //std::cout << "Move score: " << score << std::endl;
                             if(score > maxScore) {
                                 bestMove.first = std::make_pair(row, col);
                                 bestMove.second = std::make_pair(moves[i].first, moves[i].second);
                             }
-                            std::cout << "Max score: " << maxScore << std::endl;
+                            //std::cout << "Max score: " << maxScore << std::endl;
                             maxScore = std::max(maxScore,score);
                             alpha = std::max(alpha, maxScore);
                         }
@@ -161,11 +154,14 @@ int minimax(const std::vector<std::vector<ChessPiece>>& chessboard, int depth, i
                         if(player == 'W') {
                             makeMove(col, row, moves[i].second, moves[i].first, player, copyChessboard);
                             int score = minimax(copyChessboard, depth-1, alpha, beta, true, 'B');
+
                             minScore = std::min(minScore,score);
                             beta = std::min(beta, minScore);
+
                         } else {
                             makeMove(col, row, moves[i].second, moves[i].first, player, copyChessboard);
                             int score = minimax(copyChessboard, depth-1, alpha, beta, true, 'W');
+
                             minScore = std::min(minScore,score);
                             beta = std::min(beta, minScore);
                         }

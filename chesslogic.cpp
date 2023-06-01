@@ -71,7 +71,7 @@ void makeMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char c
     chessboard[fromRowVal][fromColVal].name = "";
     chessboard[fromRowVal][fromColVal].player = '\0';
 
-    std::cout << "Board updated" << std::endl;
+    //std::cout << "Board updated" << std::endl;
 
     for(int i = 0; i < BOARD_SIZE; i++) {
         for(int j = 0; j < BOARD_SIZE; j++) {
