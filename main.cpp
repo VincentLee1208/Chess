@@ -5,6 +5,7 @@
 #include "ai.h"
 #include "chesspiece.h"
 #include "chesslogic.h"
+#include "gamelogic.h"
 
 // Define constants for the chessboard dimensions
 bool gameStart = false;
@@ -119,32 +120,6 @@ bool getPlayerMove(char& fromCol, int& fromRow, char& toCol, int& toRow) {
 
 }
 
-bool displayMenu() {
-    std::cout << "CHESS" << std::endl;
-    std::cout << "To see instructions, enter 'HELP'" << std::endl;
-    std::cout << "To start the game, press enter" << std::endl;
-
-    std::cout << "Command: ";
-
-    std::string command = "";
-    std::cin >> command;
-
-    if(command.compare("") == 0) {
-        return true;
-    }
-
-    
-    if(command.compare("HELP") == 0) {
-        std::cout << "INSTRUCTIONS: \n Players can choose SinglePlayer to play against an AI bot or \n choose Multiplayer to play with a friend" << std::endl;
-        std::cout << " Players will then take turns inputting moves in the format of \n (source column, source row, destination column, destination row)" << std::endl; 
-        std::cout << "For example, [d2d3]/[D2D3] will cause pawn D2 to move to D3\n" << std::endl;
-    } else {
-        std::cout << "Unknown command, please try again" << std::endl;
-    }
-        
-    return false;
-}
-
 /*
 check if kings are still alive on the board
 Returns 0 if both alive
@@ -196,16 +171,25 @@ int main() {
         int score = 0;
 
         while(!validMove) {
-            displayChessboard();
+            displayChessboard(chessboard);
             if(getPlayerMove(fromCol, fromRow, toCol, toRow)) {
                 validMove = isValidMove(fromCol, fromRow, toCol, toRow, currentPlayer, chessboard);
             }
         }
+        int fromColVal = fromCol - 'a';
+        int toColVal = toCol - 'a';
+        int fromRowVal = 8 - fromRow;
+        int toRowVal = 8 - toRow;
 
-        makeMove(fromCol, fromRow, toCol, toRow, currentPlayer, chessboard);
+        makeMove(fromColVal, fromRowVal, toColVal, toRowVal, currentPlayer, chessboard);
+        /*
         score = evaluateBoard(chessboard);
         std::cout << "AI score: " << score << std::endl;
-        displayChessboard();
+        */
+        displayChessboard(chessboard);
+
+        aiTurn(chessboard, 'B');
+        
         gameState = kingDead();
     }
 

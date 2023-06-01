@@ -6,7 +6,7 @@
 
 const int BOARD_SIZE = 8;
 
-void makeMove(char fromCol, int fromRow, char toCol, int toRow, char currentPlayer , std::vector<std::vector<ChessPiece>> &chessboard);
+void makeMove(int fromColVal, int fromRowVal, int toColVal, int toRowVal, char currentPlayer , std::vector<std::vector<ChessPiece>> &chessboard);
 
 std::vector<std::pair<int,int>> pawnMoves(int toColVal, int toRowVal, char currentPlayer, std::vector<std::vector<ChessPiece>> &chessboard);
 std::vector<std::pair<int,int>> rookMoves(int toColVal, int toRowVal, char currentPlayer, std::vector<std::vector<ChessPiece>> &chessboard);

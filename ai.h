@@ -6,7 +6,8 @@
 #include "chesspiece.h"
  
 int evaluateBoard(const std::vector<std::vector<ChessPiece>>& chessboard);
-int minimax(const std::vector<std::vector<ChessPiece>>& chessboard, int depth, int alpha, int beta, bool maxmizingPlayer);
+int minimax(const std::vector<std::vector<ChessPiece>>& chessboard, int depth, int alpha, int beta, bool maxmizingPlayer, char player);
+void aiTurn(const std::vector<std::vector<ChessPiece>>& chessboard, char aiPlayer);
 
 const int pawnVal = 100;
 const int knightVal = 320;
